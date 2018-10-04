@@ -1,0 +1,2 @@
+# spoconverter
+Parse spotify playlists
