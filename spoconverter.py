@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import spotipy
 import spotipy.util as util
 import configparser
@@ -5,6 +6,26 @@ import urllib.request
 import urllib.parse
 import re
 import os
+import youtube_dl
+
+def download_youtube_track(track, directory, playlist_name):
+	outtmpl = os.path.join(directory, playlist_name + "/") + track["%artist%"] + " - " + track["%name%"] + '.%(ext)s'
+	ydl_opts = {
+		'format': 'bestaudio/best',
+		'outtmpl': outtmpl,
+		'postprocessors': [
+            {'key': 'FFmpegExtractAudio','preferredcodec': 'mp3',
+             'preferredquality': '192',
+            },
+            {'key': 'FFmpegMetadata'},
+        ],
+    }
+	with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+		info_dict = ydl.extract_info(track["%yt%"], download=True)
+		
+def download_youtube_tracks(tracks, directory, playlist_name):
+	for track in tracks:
+		download_youtube_track(track, directory, playlist_name)
 
 def get_spotify_token():
 	config = configparser.ConfigParser()
@@ -94,12 +115,20 @@ if __name__ == '__main__':
 		help="parse name and artist to youtube link (pretty slow and blocked when use in bulk)",
 		action="store_true")
 	parser.add_argument(
+		"-dl", "--download",
+		help="download the songs from youtube",
+		default=False,
+		action="store_true")
+	parser.add_argument(
 		"-s", "--start",
 		help="add text at the start of the output file")
 	parser.add_argument(
 		"-f", "--format",
 		help="format of the output track")
 	args = parser.parse_args()
+	if args.download and not args.youtube:
+		print("You must select youtube for be able to download")
+		exit()
 
 	cache_token = get_spotify_token()	
 	tracks, file_name = get_playlist_info(cache_token, args.URI, args.name)
@@ -107,3 +136,5 @@ if __name__ == '__main__':
 	tracks_data = get_tracks_data(tracks, youtube=args.youtube)
 	tracks_text = tracks_to_text(tracks_data, format=args.format, youtube=args.youtube)
 	write_tracks(directory, file_name, tracks_text, args.start)
+	if args.download:
+		download_youtube_tracks(tracks_data, directory, file_name)
