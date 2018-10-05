@@ -1,3 +1,0 @@
-spotipy
-youtube-dl
-eyeD3
