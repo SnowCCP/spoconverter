@@ -98,7 +98,7 @@ def write_tracks(directory, file_name, tracks, start=None):
 		f.write(track + "\n")
 	f.close()
 
-if __name__ == '__main__':
+def main():
 	import argparse
 	parser = argparse.ArgumentParser()
 	parser.add_argument(
@@ -138,3 +138,7 @@ if __name__ == '__main__':
 	write_tracks(directory, file_name, tracks_text, args.start)
 	if args.download:
 		download_youtube_tracks(tracks_data, directory, file_name)
+	sys.exit(0)
+
+if __name__ == '__main__':
+	main()
