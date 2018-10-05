@@ -8,6 +8,8 @@ import re
 import os
 import youtube_dl
 
+from mutagen.easyid3 import EasyID3
+
 def download_youtube_track(track, directory, playlist_name):
 	outtmpl = os.path.join(directory, playlist_name + "/") + track["%artist%"] + " - " + track["%name%"] + '.%(ext)s'
 	ydl_opts = {
@@ -22,7 +24,14 @@ def download_youtube_track(track, directory, playlist_name):
     }
 	with youtube_dl.YoutubeDL(ydl_opts) as ydl:
 		info_dict = ydl.extract_info(track["%yt%"], download=True)
-		
+	
+	metatag = EasyID3(os.path.splitext(outtmpl)[0] + ".mp3")
+	metatag["title"] = track["%name%"]
+	metatag["artist"] = track["%artist%"]
+	metatag["album"] = playlist_name
+	metatag["albumartist"] = u"Spotify"
+	metatag.save()
+	
 def download_youtube_tracks(tracks, directory, playlist_name):
 	for track in tracks:
 		download_youtube_track(track, directory, playlist_name)
@@ -128,7 +137,7 @@ def main():
 	args = parser.parse_args()
 	if args.download and not args.youtube:
 		print("You must select youtube for be able to download")
-		exit()
+		exit(-10)
 
 	cache_token = get_spotify_token()	
 	tracks, file_name = get_playlist_info(cache_token, args.URI, args.name)
@@ -138,7 +147,7 @@ def main():
 	write_tracks(directory, file_name, tracks_text, args.start)
 	if args.download:
 		download_youtube_tracks(tracks_data, directory, file_name)
-	sys.exit(0)
+	exit(0)
 
 if __name__ == '__main__':
 	main()
