@@ -10,18 +10,19 @@ import youtube_dl
 
 from mutagen.easyid3 import EasyID3
 
+
 def download_youtube_track(track, directory, playlist_name):
 	outtmpl = os.path.join(directory, "Spotify - " + playlist_name + "/") + track["%artist%"] + " - " + track["%name%"] + '.%(ext)s'
 	ydl_opts = {
 		'format': 'bestaudio/best',
 		'outtmpl': outtmpl,
 		'postprocessors': [
-            {'key': 'FFmpegExtractAudio','preferredcodec': 'mp3',
-             'preferredquality': '192',
-            },
-            {'key': 'FFmpegMetadata'},
-        ],
-    }
+			{'key': 'FFmpegExtractAudio','preferredcodec': 'mp3',
+				'preferredquality': '192',
+			},
+			{'key': 'FFmpegMetadata'},
+		],
+	}
 	with youtube_dl.YoutubeDL(ydl_opts) as ydl:
 		info_dict = ydl.extract_info(track["%yt%"], download=True)
 	
@@ -31,10 +32,12 @@ def download_youtube_track(track, directory, playlist_name):
 	metatag["album"] = playlist_name
 	metatag["albumartist"] = u"Spotify"
 	metatag.save()
-	
+
+
 def download_youtube_tracks(tracks, directory, playlist_name):
 	for track in tracks:
 		download_youtube_track(track, directory, playlist_name)
+
 
 def get_spotify_token():
 	config = configparser.ConfigParser()
@@ -43,7 +46,8 @@ def get_spotify_token():
 		config["Credentials"]["client_id"],
 		config["Credentials"]["client_secret"])
 	return token.get_access_token()
-	
+
+
 def get_playlist_info(token, URI, name):
 	user = URI.split(":")[2]
 	playlist_id = URI.split(":")[4]
@@ -52,7 +56,8 @@ def get_playlist_info(token, URI, name):
 	if name is None:
 		name = sp.user_playlist(user, playlist_id, fields="name")["name"]
 	return tracks, name
-	
+
+
 def create_dir(directory):
 	if directory is not None:
 		if not os.path.exists(directory):
@@ -63,13 +68,15 @@ def create_dir(directory):
 			os.makedirs(os.path.join(os.path.dirname(__file__), "playlists/"))
 		return os.path.join(os.path.dirname(__file__), "playlists/")
 
+
 def get_youtube_url(track_name, artist):
 	# https://www.codeproject.com/Articles/873060/Python-Search-Youtube-for-Video
 	query_string = urllib.parse.urlencode({"search_query": track_name + "-" + artist})
 	html_content = urllib.request.urlopen("http://www.youtube.com/results?" + query_string)
 	search_results = re.findall(r'href=\"\/watch\?v=(.{11})', html_content.read().decode())
 	return "http://www.youtube.com/watch?v=" + search_results[0]
-	
+
+
 def get_track_data(track, youtube=False):
 	name = track["name"]
 	artist = track['artists'][0]['name']
@@ -77,13 +84,15 @@ def get_track_data(track, youtube=False):
 	if youtube:
 		dic["%yt%"] = get_youtube_url(name, artist)
 	return dic
-	
+
+
 def get_tracks_data(tracks, youtube=False):
 	tracks_data = []
 	for item in tracks['items']:
 		tracks_data.append(get_track_data(item['track'], youtube))
 	return tracks_data
-		
+
+
 def tracks_to_text(tracks, format=None, youtube=False):
 	if format is not None:
 		pattern = format
@@ -98,7 +107,8 @@ def tracks_to_text(tracks, format=None, youtube=False):
 			text = text.replace(i, j)
 		tracks_text.append(text)
 	return tracks_text
-	
+
+
 def write_tracks(directory, file_name, tracks, start=None):
 	f = open(directory + file_name + ".txt", "w+", encoding="utf-8")
 	if start is not None:
@@ -106,6 +116,7 @@ def write_tracks(directory, file_name, tracks, start=None):
 	for track in tracks:
 		f.write(track + "\n")
 	f.close()
+
 
 def main():
 	import argparse
@@ -148,6 +159,7 @@ def main():
 	if args.download:
 		download_youtube_tracks(tracks_data, directory, file_name)
 	exit(0)
+
 
 if __name__ == '__main__':
 	main()

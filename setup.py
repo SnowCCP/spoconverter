@@ -12,6 +12,7 @@ setup(
     install_requires=[
         "spotipy",
         "youtube-dl",
-        "eyeD3"
-    ]
+        "eyeD3",
+    ],
+    python_requires='>=3',
 )
