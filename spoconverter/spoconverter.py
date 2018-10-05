@@ -11,7 +11,7 @@ import youtube_dl
 from mutagen.easyid3 import EasyID3
 
 def download_youtube_track(track, directory, playlist_name):
-	outtmpl = os.path.join(directory, playlist_name + "/") + track["%artist%"] + " - " + track["%name%"] + '.%(ext)s'
+	outtmpl = os.path.join(directory, "Spotify - " + playlist_name + "/") + track["%artist%"] + " - " + track["%name%"] + '.%(ext)s'
 	ydl_opts = {
 		'format': 'bestaudio/best',
 		'outtmpl': outtmpl,
